@@ -56,7 +56,7 @@ def test_registration(e2e_client, reset_db_once_for_e2e, settings, seed_user_gro
     email_html = email["Content"]["Body"]
 
     email_subject = email["Content"]["Headers"].get("Subject", [None])[0]
-    assert email_subject == "Account Activation!", f"Expected subject 'Account Activation', but got '{email_subject}'"
+    assert email_subject == "Account Activation", f"Expected subject 'Account Activation', but got '{email_subject}'"
 
     soup = BeautifulSoup(email_html, "html.parser")
 
