@@ -1,0 +1,36 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: ./docker/tests/Dockerfile
+    container_name: backend_theater_test
+    command: [ "pytest", "-m", "e2e", "--maxfail=5", "--disable-warnings", "-v", "--tb=short"]
+    environment:
+      - PYTHONPATH=/usr/src/fastapi
+      - ENVIRONMENT=testing
+      - EMAIL_HOST=mailhog_theater_test
+      - EMAIL_PORT=1025
+      - EMAIL_HOST_USER=testuser@mate.com
+      - EMAIL_HOST_PASSWORD=test_password
+      - EMAIL_USE_TLS=False
+      - MAILHOG_API_PORT=8025
+    depends_on:
+      mailhog:
+        condition: service_started
+    volumes:
+      - ./src:/usr/src/fastapi
+    networks:
+      - theater_network_test
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: mailhog_theater_test
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    networks:
+      - theater_network_test
+
+networks:
+  theater_network_test:
+    driver: bridge
