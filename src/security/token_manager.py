@@ -12,7 +12,7 @@ class JWTAuthManager(JWTAuthManagerInterface):
     A manager for creating, decoding, and verifying JWT access and refresh tokens.
     """
 
-    _ACCESS_KEY_TIMEDELTA_MINUTES = 10
+    _ACCESS_KEY_TIMEDELTA_MINUTES = 60
     _REFRESH_KEY_TIMEDELTA_MINUTES = 60 * 24 * 7
 
     def __init__(self, secret_key_access: str, secret_key_refresh: str, algorithm: str):
@@ -69,8 +69,7 @@ class JWTAuthManager(JWTAuthManagerInterface):
             return jwt.decode(token, self._secret_key_refresh, algorithms=[self._algorithm])
         except ExpiredSignatureError:
             raise TokenExpiredError
-        except JWTError as error:
-            print(error)
+        except JWTError:
             raise InvalidTokenError
 
     def verify_refresh_token_or_raise(self, token: str) -> None:

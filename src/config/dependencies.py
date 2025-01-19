@@ -6,6 +6,7 @@ from config.settings import TestingSettings, Settings, BaseAppSettings
 from notifications import EmailSenderInterface, EmailSender
 from security.interfaces import JWTAuthManagerInterface
 from security.token_manager import JWTAuthManager
+from storages import S3StorageInterface, S3StorageClient
 
 
 def get_settings() -> BaseAppSettings:
@@ -36,3 +37,12 @@ def get_accounts_email_notificator(settings: BaseAppSettings = Depends(get_setti
         password_email_template_name=settings.PASSWORD_RESET_TEMPLATE_NAME,
         password_complete_email_template_name=settings.PASSWORD_RESET_COMPLETE_TEMPLATE_NAME
     )
+
+
+def get_s3_storage_client(settings: BaseAppSettings = Depends(get_settings)) -> S3StorageInterface:
+   return S3StorageClient(
+       endpoint_url=settings.S3_STORAGE_ENDPOINT,
+       access_key=settings.S3_STORAGE_ACCESS_KEY,
+       secret_key=settings.S3_STORAGE_SECRET_KEY,
+       bucket_name=settings.S3_BUCKET_NAME
+   )

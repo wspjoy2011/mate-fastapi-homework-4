@@ -1,5 +1,4 @@
-# Use Ubuntu 22.04 as the base image
-FROM ubuntu:22.04
+FROM debian:bookworm-slim
 
 # Install necessary dependencies
 RUN apt update && apt install -y  \

@@ -2,7 +2,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import insert
 
-from config import get_settings, get_accounts_email_notificator
+from config import get_settings, get_accounts_email_notificator, get_s3_storage_client
 from database import (
     reset_database,
     get_db_contextmanager,
@@ -12,6 +12,8 @@ from database import (
 from database.populate import CSVDatabaseSeeder
 from main import app
 from security.token_manager import JWTAuthManager
+from storages import S3StorageClient
+from tests.doubles.fakes.storage import FakeS3Storage
 from tests.doubles.stubs.emails import StubEmailSender
 
 
@@ -21,6 +23,9 @@ def pytest_configure(config):
     )
     config.addinivalue_line(
         "markers", "order: Specify the order of test execution"
+    )
+    config.addinivalue_line(
+        "markers", "unit: Unit tests"
     )
 
 
@@ -47,8 +52,24 @@ def email_sender_stub():
 
 
 @pytest.fixture(scope="function")
-def client(email_sender_stub):
+def s3_storage_fake():
+    return FakeS3Storage()
+
+
+@pytest.fixture(scope="session")
+def s3_client(settings):
+    return S3StorageClient(
+        endpoint_url=settings.S3_STORAGE_ENDPOINT,
+        access_key=settings.S3_STORAGE_ACCESS_KEY,
+        secret_key=settings.S3_STORAGE_SECRET_KEY,
+        bucket_name=settings.S3_BUCKET_NAME
+    )
+
+
+@pytest.fixture(scope="function")
+def client(email_sender_stub, s3_storage_fake):
     app.dependency_overrides[get_accounts_email_notificator] = lambda: email_sender_stub
+    app.dependency_overrides[get_s3_storage_client] = lambda: s3_storage_fake
 
     with TestClient(app) as test_client:
         yield test_client
